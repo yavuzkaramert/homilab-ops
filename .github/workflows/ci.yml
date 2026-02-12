@@ -24,7 +24,7 @@ jobs:
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./apps/hello-world/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
           # Kullanıcı adını ve imaj adını buraya yaz (Örn: username/homelab-app)
