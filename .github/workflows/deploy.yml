@@ -2,11 +2,13 @@ name: CI to Docker Hub
 
 on:
   push:
-    branches: [ "main" ] # Sadece main branch'ine push yapıldığında çalışır
+    branches: ["main"]
 
 jobs:
   build-push:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -25,7 +27,17 @@ jobs:
         with:
           context: .
           push: true
-          # Homelab cihazları genelde ARM tabanlı (Pi gibi) olduğu için 
-          # çoklu mimari desteği eklemek en iyi pratiktir.
           platforms: linux/amd64,linux/arm64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/homelab-oracle:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/homelab-oracle:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/homelab-oracle:latest
+
+      - name: Update Kubernetes Manifests
+        run: |
+          sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/homelab-oracle:${{ github.sha }}|g" k8s/deployment.yaml
+
+          git config --global user.name "GitOps Bot"
+          git config --global user.email "bot@homelab.local"
+          git add k8s/deployment.yaml
+          git commit -m "chore(cd): update image tag to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
+          git push
