@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hello-world-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/yavuzkaramert/homilab-ops.git' # Burayı kendi reponla değiştir
+    targetRevision: HEAD
+    path: k8s # Kubernetes manifestlerinin olduğu klasör
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true    # Repodan silinen dosya cluster'dan da silinsin
+      selfHeal: true # Cluster'da manuel değişiklik yapılırsa repo haline geri dönsün
