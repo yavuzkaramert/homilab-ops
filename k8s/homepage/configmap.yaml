@@ -3,14 +3,26 @@ kind: ConfigMap
 metadata:
   name: homepage-config
 data:
+  widgets.yaml: |
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+    - datetime:
+        text_size: xl
+        format:
+          dateStyle: long
+          timeStyle: short
+  
   services.yaml: |
-    - My Homelab:
+    - Altyapı:
         - ArgoCD:
             icon: argocd.png
-            href: http://oracle.homelab.local # Kendi ingress domaininle değiştir
-            description: GitOps Controller
-  settings.yaml: |
-    title: Homelab Dashboard
-    layout:
-      My Homelab:
-        style: cols-3
+            href: http://argocd.homelab.local
+            description: GitOps Pipeline
+        - K3s Node:
+            icon: kubernetes.png
+            widget:
+              type: kubernetes
+              showDetails: true
