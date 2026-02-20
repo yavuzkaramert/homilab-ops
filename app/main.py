@@ -17,7 +17,7 @@ QUOTES = [
 def read_root():
     return {
         "status": "online",
-        "message": "Test v2.0 - GOOD LUCK!"
+        "message": "Test v3.0 - Konteynerler çalışıyor, her şey yolunda!",
     }
 
 @app.get("/health")
