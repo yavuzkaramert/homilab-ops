@@ -17,9 +17,7 @@ QUOTES = [
 def read_root():
     return {
         "status": "online",
-        "message": random.choice(QUOTES),
-        "node_name": os.getenv("NODE_NAME", "unknown-node"),
-        "pod_namespace": os.getenv("POD_NAMESPACE", "default")
+        "message": "Test v1.0 - Konteynerler çalışıyor, her şey yolunda!"
     }
 
 @app.get("/health")
