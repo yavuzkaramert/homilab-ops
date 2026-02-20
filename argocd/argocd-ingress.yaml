@@ -4,13 +4,12 @@ metadata:
   name: argocd-server-ingress
   namespace: argocd
   annotations:
-    kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-    # Eğer cert-manager kurmadıysan backend-protocol'ü HTTP tutmalısın
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
+  ingressClassName: nginx
   rules:
-  - host: argocd.homelab.local # Kendi domain/IP yönlendirmenle değiştir
+  - host: argocd
     http:
       paths:
       - path: /
