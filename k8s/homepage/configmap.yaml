@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-config
+data:
+  services.yaml: |
+    - My Homelab:
+        - ArgoCD:
+            icon: argocd.png
+            href: http://oracle.homelab.local # Kendi ingress domaininle değiştir
+            description: GitOps Controller
+  settings.yaml: |
+    title: Homelab Dashboard
+    layout:
+      My Homelab:
+        style: cols-3

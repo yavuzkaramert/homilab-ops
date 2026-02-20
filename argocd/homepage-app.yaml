@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homepage-dashboard
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: <SENIN_REPO_URLN>
+    targetRevision: HEAD
+    path: k8s/homepage # Sadece bu klasörü izle
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
