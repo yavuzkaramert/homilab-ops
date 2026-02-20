@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: oracle
-        image: yavuzkaramert/homelab-oracle:0d49f71de847989a12cd1abb213bc6ab0ba742ed
+        image: yavuzkaramert/homelab-oracle:1629e66dba876d0c0a0156fa8dd435e4f1f2edd5
         ports:
         - containerPort: 8000
         resources:
