@@ -3,9 +3,16 @@ kind: ConfigMap
 metadata:
   name: homepage-config
 data:
+  # Eksik olan boş dosyayı ekledik ki uygulama çökmesin
+  kubernetes.yaml: |
+    # Boş bırakılabilir ama dosya fiziksel olarak var olmalı
+  
+  bookmarks.yaml: |
+    # Boş bırakılabilir
+    
   settings.yaml: |
     title: Homelab Ops Center
-    background: https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070 # Dark Tech Background
+    background: https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070
     cardBlur: sm
     theme: dark
     layout:
@@ -49,10 +56,10 @@ data:
             icon: argocd.svg
             href: http://argocd.local
             description: Continuous Delivery
-            statusStyle: dot # Canlılık durumunu nokta ile gösterir
+            statusStyle: dot
         - GitHub:
             icon: github-light.png
-            href: https://github.com/senin-repon
+            href: https://github.com/yavuzkaramert/homilab-ops
             description: Source Code Management
 
     - Uygulamalar:
@@ -60,6 +67,3 @@ data:
             icon: python.png
             href: http://myapp.local
             description: Python Backend
-            container: homepage # Container adını yazarsan canlı stats çeker
-
-      
