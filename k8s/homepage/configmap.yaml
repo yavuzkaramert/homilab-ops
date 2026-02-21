@@ -3,26 +3,63 @@ kind: ConfigMap
 metadata:
   name: homepage-config
 data:
+  settings.yaml: |
+    title: Homelab Ops Center
+    background: https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070 # Dark Tech Background
+    cardBlur: sm
+    theme: dark
+    layout:
+      Sistem Durumu:
+        style: row
+        columns: 4
+      Altyapı & GitOps:
+        style: cols-3
+      Uygulamalar:
+        style: cols-3
+  
   widgets.yaml: |
     - kubernetes:
         cluster:
           show: true
           cpu: true
           memory: true
-    - datetime:
-        text_size: xl
-        format:
-          dateStyle: long
-          timeStyle: short
+          showNodeData: true
+    - search:
+        provider: google
+        focus: true
+    - resources:
+        cpu: true
+        memory: true
+        label: Sunucu Kaynakları
   
   services.yaml: |
-    - Altyapı:
-        - ArgoCD:
-            icon: argocd.png
-            href: http://argocd.homelab.local
-            description: GitOps Pipeline
-        - K3s Node:
+    - Sistem Durumu:
+        - K3s Cluster:
             icon: kubernetes.png
             widget:
               type: kubernetes
               showDetails: true
+        - DockerHub:
+            icon: docker.png
+            href: https://hub.docker.com/
+            description: Image Registry
+
+    - Altyapı & GitOps:
+        - ArgoCD:
+            icon: argocd.svg
+            href: http://argocd.local
+            description: Continuous Delivery
+            statusStyle: dot # Canlılık durumunu nokta ile gösterir
+        - GitHub:
+            icon: github-light.png
+            href: https://github.com/senin-repon
+            description: Source Code Management
+
+    - Uygulamalar:
+        - My App:
+            icon: python.png
+            href: http://myapp.local
+            description: Python Backend
+            container: homepage # Container adını yazarsan canlı stats çeker
+
+      
