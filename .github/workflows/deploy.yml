@@ -1,20 +1,22 @@
-name: CI to Docker Hub
-
-permissions:
-  contents: write
+name: CI/CD Pipeline
 
 on:
   push:
     branches: ["main"]
+    paths-ignore:
+      - 'k8s/**' # K8s klasöründeki değişiklikler döngüye girmesin
+      - 'README.md'
 
 jobs:
-  build-push:
+  build-and-deploy:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # Push izni için gerekli
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -25,6 +27,17 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # ADIM 1: Build & Scan (Güvenlik Öncelikli)
+      - name: Build and Export to Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true # Scan için önce yerel docker'a yükle
+          tags: local-check:${{ github.sha }}
+
+      # Opsiyonel: Buraya bir 'Trivy' veya 'Snyk' scan adımı eklenebilir.
+
+      # ADIM 2: Push (Çoklu Platform)
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
@@ -34,13 +47,28 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/homelab-oracle:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/homelab-oracle:latest
+          cache-from: type=gha # Hızlı build için cache
+          cache-to: type=gha,mode=max
 
+      # ADIM 3: Güvenli Manifest Güncelleme (GitOps)
       - name: Update Kubernetes Manifests
+        env:
+          IMG_TAG: ${{ github.sha }}
+          IMG_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/homelab-oracle
         run: |
-          sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/homelab-oracle:${{ github.sha }}|g" k8s/deployment.yaml
-
+          # Daha spesifik bir sed kullanımı veya 'yq' tool'u önerilir.
+          # Sadece ilgili deployment'ın image satırını hedefler:
+          sed -i "s|image: ${IMG_NAME}:.*|image: ${IMG_NAME}:${IMG_TAG}|g" k8s/deployment.yaml
+          
           git config --global user.name "GitOps Bot"
           git config --global user.email "bot@homelab.local"
           git add k8s/deployment.yaml
-          git commit -m "chore(cd): update image tag to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
+          
+          # Değişiklik yoksa hata vermeden geç
+          if git diff-index --quiet HEAD --; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git commit -m "chore(cd): update image tag to ${IMG_TAG}"
           git push

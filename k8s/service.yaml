@@ -2,13 +2,18 @@ apiVersion: v1
 kind: Service
 metadata:
   name: oracle-service
+  namespace: default
   labels:
     app: oracle
+    tier: backend
 spec:
+  # ClusterIP, podlar arası iletişim ve Ingress arkası kullanım için en güvenli tiptir.
   type: ClusterIP
   selector:
+    # Bu etiket Deployment'taki 'spec.template.metadata.labels' ile aynı olmalı
     app: oracle
   ports:
-    - port: 80
-      targetPort: 8000
+    - name: http           # Porta isim vermek Ingress ve loglarda kolaylık sağlar
+      port: 80             # Servisin cluster içinde dinlediği port
+      targetPort: 8000     # Pod içindeki uygulamanın (FastAPI) dinlediği port
       protocol: TCP

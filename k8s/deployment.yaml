@@ -2,10 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: oracle-app
+  namespace: default
   labels:
     app: oracle
+    tier: backend
 spec:
   replicas: 2
+  # Deployment stratejisi ekleyerek güncelleme anında kesintiyi önlüyoruz
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1       # Güncelleme anında fazladan 1 pod açılabilir
+      maxUnavailable: 0 # Güncelleme sırasında hiçbir pod kapanmasın (Sıfır Kesinti)
   selector:
     matchLabels:
       app: oracle
@@ -14,17 +22,44 @@ spec:
       labels:
         app: oracle
     spec:
+      # Güvenlik: Pod seviyesinde kısıtlamalar
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
       containers:
       - name: oracle
-        image: yavuzkaramert/homelab-oracle:8847638461169178a4aec216e2493984eb850a95
         ports:
         - containerPort: 8000
+          name: http
+        
+        # SAĞLIK KONTROLLERİ (Kritik Eksik!)
+        # Uygulama hazır mı? (Trafik gönderilsin mi?)
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        # Uygulama yaşıyor mu? (Kilitlendiyse restart et)
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+
         resources:
-          limits:
+          requests: # Pod'un çalışması için gereken minimum kaynak
+            memory: "64Mi"
+            cpu: "50m"
+          limits:   # Pod'un taşabileceği maksimum sınır
             memory: "128Mi"
             cpu: "200m"
+
         env:
         - name: NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: APP_ENV
+          value: "homelab"

@@ -2,17 +2,23 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: homepage-ingress
-  namespace: default
+  namespace: homepage # Uygulama ile aynı namespace'de olmalı!
   annotations:
+    # Nginx Ingress Controller'ı bu ingress'i işlemesi için zorluyoruz
     kubernetes.io/ingress.class: nginx
-    # Eğer SSL sertifikası (Cert-Manager) kullanıyorsan buraya ekleyeceğiz
+    # Homepage gibi dashboard'larda session veya cache sorunları için timeout ayarları
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    # Eğer daha sonra HTTPS kullanacaksan TLS yönlendirmesi:
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
+  ingressClassName: nginx
   rules:
-  - host: homepage.local  # Bunu kendi istediğin domainle değiştir
+  - host: homepage.local
     http:
       paths:
       - path: /
-        pathType: Prefix
+        pathType: ImplementationSpecific # Daha esnek bir yol eşleştirme tipi
         backend:
           service:
             name: homepage-service

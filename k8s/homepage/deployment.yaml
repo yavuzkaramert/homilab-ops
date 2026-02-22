@@ -2,9 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: homepage
-  namespace: default
+  namespace: homepage # ConfigMap ile aynı namespace olmalı
+  labels:
+    app: homepage
 spec:
   replicas: 1
+  strategy:
+    type: Recreate # ConfigMap mount sorunlarını önlemek için Homelab'de daha güvenlidir
   selector:
     matchLabels:
       app: homepage
@@ -13,19 +17,42 @@ spec:
       labels:
         app: homepage
     spec:
+      # ÖNEMLİ: Kubernetes widget'ı için gereken yetki (aşağıda açıklayacağım)
+      serviceAccountName: homepage-sa 
+      
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000 # Log klasörüne yazma izni için kritik
+        
       containers:
         - name: homepage
-          image: ghcr.io/gethomepage/homepage:latest
+          # Best Practice: 'latest' yerine spesifik versiyon kullan
+          image: ghcr.io/gethomepage/homepage:v0.8.35
           ports:
             - containerPort: 3000
+              name: http
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
-              value: homepage.local
+              value: "homepage.local,oracle.homelab.local"
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "300m"
+              memory: "256Mi"
           volumeMounts:
             - name: config
               mountPath: /app/config
             - name: logs
               mountPath: /app/config/logs
+            # Docker widget'ı kullanacaksan buraya /var/run/docker.sock mount edilmeli
+            
       volumes:
         - name: config
           configMap:

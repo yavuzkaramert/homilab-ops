@@ -1,9 +1,15 @@
 from fastapi import FastAPI
 import random
 import os
+import socket
 
-app = FastAPI(title="The Homilab")
+app = FastAPI(
+    title="The Homilab",
+    description="Homelab Oracle - Konteyner Bilgelik Servisi",
+    version="3.0.0"
+)
 
+# Sözleri bir değişkene alıp yönetmek iyidir
 QUOTES = [
     "Konteynerlerin huzur içinde çalışıyor.",
     "Bugün bir YAML hatası yapmayacaksın, hissediyorum.",
@@ -15,11 +21,16 @@ QUOTES = [
 
 @app.get("/")
 def read_root():
+    """Ana dizin: Uygulama durumu ve rastgele bir motivasyon mesajı döner."""
     return {
         "status": "online",
-        "message": "Test v3.0 - Konteynerler çalışıyor, her şey yolunda!",
+        "version": "v3.0",
+        "message": random.choice(QUOTES),
+        "hostname": socket.gethostname(), # Hangi podun yanıt verdiğini görmek için kritik!
+        "environment": os.getenv("APP_ENV", "development")
     }
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy"}
+    """Kubernetes Liveness ve Readiness probları için standart endpoint."""
+    return {"status": "healthy", "service": "homelab-oracle"}

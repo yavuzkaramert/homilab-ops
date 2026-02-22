@@ -2,14 +2,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: homepage-config
+  namespace: homepage # Önceki adımda belirttiğimiz namespace
 data:
-  # Eksik olan boş dosyayı ekledik ki uygulama çökmesin
-  kubernetes.yaml: |
-    # Boş bırakılabilir ama dosya fiziksel olarak var olmalı
-  
-  bookmarks.yaml: |
-    # Boş bırakılabilir
-    
+  # Ayarlar: Görsel ve genel yapı
   settings.yaml: |
     title: Homelab Ops Center
     background: https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070
@@ -20,10 +15,13 @@ data:
         style: row
         columns: 4
       Altyapı & GitOps:
-        style: cols-3
+        style: row
+        columns: 3
       Uygulamalar:
-        style: cols-3
-  
+        style: row
+        columns: 3
+
+  # Widgetlar: Cluster'ın anlık durumunu izlemek için
   widgets.yaml: |
     - kubernetes:
         cluster:
@@ -34,11 +32,13 @@ data:
     - search:
         provider: google
         focus: true
-    - resources:
-        cpu: true
-        memory: true
-        label: Sunucu Kaynakları
-  
+    - datetime:
+        format:
+          timeStyle: short
+          dateStyle: long
+        hour12: false
+
+  # Servisler: Uygulamalarına hızlı erişim
   services.yaml: |
     - Sistem Durumu:
         - K3s Cluster:
@@ -48,22 +48,28 @@ data:
               showDetails: true
         - DockerHub:
             icon: docker.png
-            href: https://hub.docker.com/
+            href: https://hub.docker.com/u/yavuzkaramert
             description: Image Registry
 
     - Altyapı & GitOps:
         - ArgoCD:
             icon: argocd.svg
             href: http://argocd.local
-            description: Continuous Delivery
-            statusStyle: dot
-        - GitHub:
-            icon: github-light.png
+            description: GitOps Engine
+        - GitHub Repo:
+            icon: github.png
             href: https://github.com/yavuzkaramert/homilab-ops
-            description: Source Code Management
+            description: Ops Repository
 
     - Uygulamalar:
-        - My App:
-            icon: python.png
-            href: http://myapp.local
-            description: Python Backend
+        - Oracle App: # Az önce kurduğumuz uygulama
+            icon: fastapi.png
+            href: http://oracle.homelab.local
+            description: Konteyner Bilgelik Servisi
+            ping: http://oracle-service.default.svc.cluster.local/health # İçten kontrol
+
+  # Boş ama gerekli dosyalar
+  kubernetes.yaml: ""
+  bookmarks.yaml: ""
+  custom.css: ""
+  docker.yaml: ""
