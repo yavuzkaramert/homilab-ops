@@ -12,9 +12,8 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
 spec:
-  ingressClassName: nginx
   rules:
-  - host: argocd.local
+  - host: argocd.local  # Tarayıcıya yazdığınla AYNI olmalı
     http:
       paths:
       - path: /
