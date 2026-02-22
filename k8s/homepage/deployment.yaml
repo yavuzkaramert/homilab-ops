@@ -28,7 +28,7 @@ spec:
       containers:
         - name: homepage
           # Best Practice: 'latest' yerine spesifik versiyon kullan
-          image: ghcr.io/gethomepage/homepage:v0.8.35
+          image: ghcr.io/gethomepage/homepage:latest
           ports:
             - containerPort: 3000
               name: http
