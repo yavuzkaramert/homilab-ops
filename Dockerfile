@@ -1,32 +1,46 @@
-# Stage 1: Build (Bağımlılıkların derlenmesi)
-FROM python:3.11-slim as builder
+# =========================
+# Stage 1 — Builder
+# =========================
+FROM python:3.11-slim AS builder
 
 WORKDIR /build
+
+# Build için gerekli sistem paketleri
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# pip tooling upgrade
+RUN pip install --upgrade pip setuptools wheel
+
 COPY requirements.txt .
 
-# --user yerine direkt bir klasöre (target) install etmek kopyalamayı kolaylaştırır
+# Bağımlılıkları /install altına kur
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# Stage 2: Run (Hafif ve güvenli çalışma ortamı)
+
+# =========================
+# Stage 2 — Runtime
+# =========================
 FROM python:3.11-slim
 
-# Uygulama çalışma dizini
 WORKDIR /app
 
-# Güvenlik: Uygulama kullanıcısını oluştur
+# Non-root user
 RUN useradd -m -u 1000 devops
 
-# Builder stage'den sadece kütüphaneleri al (Tertemiz bir image)
+# Builder stage’den sadece kurulu paketleri al
 COPY --from=builder /install /usr/local
 
-# Uygulama kodunu kopyala (Klasör yapısına dikkat: app/main.py -> /app/main.py)
+# Uygulama kodu
 COPY ./app /app
 
-# Dosya sahipliğini devops kullanıcısına ver (Opsiyonel ama önerilir)
+# Sahiplik
 RUN chown -R devops:devops /app
 
-# PATH zaten /usr/local/bin olduğu için extra ENV'ye gerek kalmaz
 USER devops
 
-# Uygulama başlatma (Modül yolunu sadeleştirdik)
+EXPOSE 8000
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
